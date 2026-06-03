@@ -18,7 +18,13 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function(origin, callback) {
+    if (!origin || origin.includes('e0423030-alts-projects.vercel.app') || origin.includes('localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -38,7 +44,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Health check
+
 app.get('/health', async (req, res) => {
   try {
     const User = (await import('./models/User.js')).default;
@@ -59,7 +65,7 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Error handling middleware
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
